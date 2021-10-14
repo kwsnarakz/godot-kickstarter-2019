@@ -16,14 +16,19 @@ export(float, 0, 1) var ground_probability := 0.1
 var size := inner_size + 2 * perimeter_size
 
 # Private variables
-onready var _title_map : TileMap = $TileMap # s same as get_node("TileMap") 
+onready var _tile_map : TileMap = $TileMap # same as get_node("TileMap") 
 var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
-	return
+	_rng.randomize()
+	setup()
+	generate()
 
 func setup() -> void:
 	# Sets the game window size to twice the resolution of the world.
+	var map_size_px := size * _tile_map.cell_size
+	get_tree().set_screen_stretch(SceneTree.STRETCH_MODE_2D, SceneTree.STRETCH_ASPECT_KEEP, map_size_px)
+	OS.set_window_size(2 * map_size_px)
 	return
 
 
@@ -31,13 +36,20 @@ func generate() -> void:
 	# Although there's no other nodes to use these signals, we're including them
 	# to show when and how to emit them.
 	# Watch our signals tutorial for more information.
-	return
-
+	emit_signal("started")
+	generate_perimeter()
+	generate_inner()
+	emit_signal("finished")
 
 func generate_perimeter() -> void:
 	# Fills the outer edges of the map with the border tiles.
 	# Randomly selects from the tiles marked as `Cell.OUTER` using the funciton `_pick_random_texture`.
-	return
+	for x in [0, size.x - 1]:
+		for y in range(0, size.y):
+			_tile_map.set_cell(x, y, _pick_random_texture(Cell.OUTER))
+	for x in range(1, size.x - 1):
+		for y in [0, size.y - 1]:
+			_tile_map.set_cell(x, y, _pick_random_texture(Cell.OUTER))
 
 
 func generate_inner() -> void:
@@ -46,3 +58,14 @@ func generate_inner() -> void:
 	# over what types of tiles we'll be placing.
 	return
 
+func _pick_random_texture(cell_type: int) -> int:
+	# Randomly picks a tile based on the three types.
+	# Returns the id of the cell in the TileSet resource.
+	var interval := Vector2()
+	if cell_type == Cell.OUTER:
+		interval = Vector2(0, 9)
+	elif cell_type == Cell.GROUND:
+		interval = Vector2(10, 14)
+	elif cell_type == Cell.OBSTACLE:
+		interval = Vector2(15, 27)	
+	return _rng.randi_range(interval.x, interval.y)
