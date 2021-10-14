@@ -1,14 +1,26 @@
 extends Node2D
+class_name GameWorld
 # Procedurally generates a tile-based map with a border.
 # Right click or press enter to re-generate the map.
 
+signal started
+signal finished
+
+enum Cell {OBSTACLE, GROUND, OUTER}
+
+export var inner_size := Vector2(10, 8)
+export var perimeter_size := Vector2(1, 1)
+export(float, 0, 1) var ground_probability := 0.1
 
 # Public variables
-
+var size := inner_size + 2 * perimeter_size
 
 # Private variables
+onready var _title_map : TileMap = $TileMap # s same as get_node("TileMap") 
+var _rng := RandomNumberGenerator.new()
 
-
+func _ready() -> void:
+	return
 
 func setup() -> void:
 	# Sets the game window size to twice the resolution of the world.
