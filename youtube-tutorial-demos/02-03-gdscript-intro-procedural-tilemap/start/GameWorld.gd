@@ -56,9 +56,17 @@ func generate_inner() -> void:
 	# Fills the inside of the map the inner tiles from the remaining types: `Cell.GROUND` and `Cell.OBSTACLE` using the
 	# `get_random_tile` function that takes the probability for `Cell.GROUND` tiles to have some more control
 	# over what types of tiles we'll be placing.
-	return
+	for x in range(1, size.x - 1):
+		for y in range(1, size.y - 1):
+			var cell := get_random_tile(ground_probability)
+			_tile_map.set_cell(x, y, cell)
 
-func _pick_random_texture(cell_type: int) -> int:
+
+func get_random_tile(probability:float) -> int:
+	return _pick_random_texture(Cell.GROUND) if _rng.randf() < probability else _pick_random_texture(Cell.OBSTACLE)
+	
+	
+func _pick_random_texture(cell_type:int) -> int:
 	# Randomly picks a tile based on the three types.
 	# Returns the id of the cell in the TileSet resource.
 	var interval := Vector2()
@@ -68,4 +76,10 @@ func _pick_random_texture(cell_type: int) -> int:
 		interval = Vector2(10, 14)
 	elif cell_type == Cell.OBSTACLE:
 		interval = Vector2(15, 27)	
+# warning-ignore:narrowing_conversion
+# warning-ignore:narrowing_conversion
 	return _rng.randi_range(interval.x, interval.y)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("confirm"):
+		generate()
